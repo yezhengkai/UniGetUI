@@ -216,13 +216,21 @@ public sealed class Uv : PackageManager
     }
 
     internal IReadOnlyList<UvTool> ListTools(string listArguments, LoggableTaskType taskType)
+        => UvToolListParser.Parse(RunUvCli($"list {listArguments}", taskType));
+
+    internal IReadOnlyList<UvPythonInstall> ListPythonInterpreters(
+        string listArguments,
+        LoggableTaskType taskType
+    ) => UvPythonService.ParseJson(string.Join('\n', RunUvCli($"python list {listArguments}", taskType)));
+
+    internal IReadOnlyList<string> RunUvCli(string arguments, LoggableTaskType taskType)
     {
         using Process process = new()
         {
             StartInfo = new ProcessStartInfo
             {
                 FileName = Status.ExecutablePath,
-                Arguments = Status.ExecutableCallArgs + "list " + listArguments,
+                Arguments = Status.ExecutableCallArgs + arguments,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
@@ -248,7 +256,7 @@ public sealed class Uv : PackageManager
         process.WaitForExit();
         processLogger.Close(process.ExitCode);
 
-        return UvToolListParser.Parse(outputLines);
+        return outputLines;
     }
 
     public override IReadOnlyList<string> FindCandidateExecutableFiles() =>
