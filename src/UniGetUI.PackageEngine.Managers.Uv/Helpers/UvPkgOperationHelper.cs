@@ -1,8 +1,12 @@
+using UniGetUI.Core.Logging;
 using UniGetUI.Core.Tools;
 using UniGetUI.PackageEngine.Classes.Manager.BaseProviders;
 using UniGetUI.PackageEngine.Enums;
 using UniGetUI.PackageEngine.Interfaces;
+using UniGetUI.PackageEngine.Interfaces.ManagerProviders;
 using UniGetUI.PackageEngine.Managers.UvManager.Internal;
+using UniGetUI.PackageEngine.Managers.UvManager.Models;
+using UniGetUI.PackageEngine.Managers.UvManager.Services;
 using UniGetUI.PackageEngine.Serializable;
 using UniGetUI.PackageEngine.Structs;
 
@@ -91,6 +95,60 @@ internal sealed class UvPkgOperationHelper : BasePkgOperationHelper
 
         if (options.Uv_NoPythonDownloads)
             package.OverridenOptions.Uv_NoPythonDownloads = true;
+    }
+
+    /// <summary>
+    /// Reads the interpreter catalogue through <see cref="UvPythonService"/> so the
+    /// install-options dialog can offer a <c>--python</c> request. Entries already on disk
+    /// come first, then the ones uv could download on demand.
+    /// </summary>
+    public override IReadOnlyList<PythonInterpreterChoice> ListPythonInterpreters()
+    {
+        List<PythonInterpreterChoice> installed = [];
+        List<PythonInterpreterChoice> downloadable = [];
+        try
+        {
+            foreach (UvPythonInstall interpreter in UvPythonService.List((Uv)Manager, allVersions: false))
+            {
+                var choice = new PythonInterpreterChoice(
+                    Request: interpreter.Key,
+                    DisplayName: DisplayNameFor(interpreter),
+                    Installed: interpreter.Path is not null,
+                    Downloadable: interpreter.DownloadUrl is not null && interpreter.Path is null
+                );
+                if (choice.Installed)
+                    installed.Add(choice);
+                else if (choice.Downloadable)
+                    downloadable.Add(choice);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.Warn(
+                $"Could not list the Python interpreters uv knows about: {ex.Message}"
+            );
+        }
+
+        installed.AddRange(downloadable);
+        return installed;
+    }
+
+    private static string DisplayNameFor(UvPythonInstall interpreter)
+    {
+        List<string> parts =
+        [
+            interpreter.Implementation switch
+            {
+                "cpython" => "CPython",
+                "pypy" => "PyPy",
+                "graalpy" => "GraalPy",
+                _ => interpreter.Implementation,
+            },
+            interpreter.Version,
+        ];
+        if (interpreter.Variant is not ("" or "default"))
+            parts.Add(interpreter.Variant);
+        return string.Join(' ', parts);
     }
 
     protected override OperationVeredict _getOperationResult(

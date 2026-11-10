@@ -69,5 +69,12 @@ namespace UniGetUI.PackageEngine.Interfaces.ManagerProviders
             int returnCode,
             InstallOptions? options = null
         );
+
+        /// <summary>
+        /// Lets the dialog ask the manager's helper for the installed and downloadable Python
+        /// interpreters when the manager capability SupportsCustomPythonInterpreters is set.
+        /// Managers that do not offer the choice return an empty list.
+        /// </summary>
+        public IReadOnlyList<PythonInterpreterChoice> ListPythonInterpreters();
     }
 }

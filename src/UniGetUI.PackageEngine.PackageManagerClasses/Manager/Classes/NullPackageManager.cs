@@ -224,5 +224,7 @@ namespace UniGetUI.PackageEngine.Classes.Manager
             int returnCode,
             InstallOptions? options = null
         ) => null;
+
+        public IReadOnlyList<PythonInterpreterChoice> ListPythonInterpreters() => [];
     }
 }

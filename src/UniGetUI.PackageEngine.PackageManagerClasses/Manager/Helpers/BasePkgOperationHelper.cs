@@ -178,4 +178,10 @@ public abstract class BasePkgOperationHelper : IPackageOperationHelper
         int returnCode,
         InstallOptions? options = null
     ) => null;
+
+    /// <summary>
+    /// Default implementation: no interpreter choice. Managers whose capability
+    /// SupportsCustomPythonInterpreters is set override this to list what they offer.
+    /// </summary>
+    public virtual IReadOnlyList<PythonInterpreterChoice> ListPythonInterpreters() => [];
 }
