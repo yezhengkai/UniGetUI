@@ -1,3 +1,4 @@
+using System.Text.Json.Nodes;
 using UniGetUI.PackageEngine.Enums;
 using UniGetUI.PackageEngine.Managers.Generic.PyPI;
 using UniGetUI.PackageEngine.Managers.UvManager;
@@ -531,5 +532,76 @@ public sealed class UvPhase3Tests : IDisposable
         {
             UvToolInstallRecords.TestPathOverride = null;
         }
+    }
+
+    [Fact]
+    public void UvOptionsSurviveAsJsonNodeRoundTrip()
+    {
+        InstallOptions options = new()
+        {
+            Uv_PythonRequest = "3.13.2",
+            Uv_ManagedPython = "false",
+            Uv_NoPythonDownloads = true,
+        };
+
+        InstallOptions reloaded = new(options.AsJsonNode());
+
+        Assert.Equal("3.13.2", reloaded.Uv_PythonRequest);
+        Assert.Equal("false", reloaded.Uv_ManagedPython);
+        Assert.True(reloaded.Uv_NoPythonDownloads);
+    }
+
+    [Fact]
+    public void ClearedManagedPythonStaysOutOfSerializedOutput()
+    {
+        InstallOptions options = new() { Uv_ManagedPython = "true" };
+        options.Uv_ManagedPython = "";
+
+        JsonObject serialized = options.AsJsonNode();
+
+        Assert.Null(serialized["UvManagedPython"]);
+    }
+
+    [Fact]
+    public void SavedUvOptionsLandInThePackageOverrides()
+    {
+        Uv manager = new();
+        Package package = new PackageBuilder()
+            .WithManager(manager)
+            .WithId("ruff")
+            .Build();
+        UvPkgOperationHelper helper = (UvPkgOperationHelper)manager.OperationHelper;
+
+        helper.ApplyOperationOverrides(
+            package,
+            new InstallOptions
+            {
+                Uv_PythonRequest = "3.13.2",
+                Uv_ManagedPython = "false",
+                Uv_NoPythonDownloads = true,
+            },
+            OperationType.Install
+        );
+
+        Assert.Equal("3.13.2", package.OverridenOptions.Uv_PythonRequest);
+        Assert.False(package.OverridenOptions.Uv_ManagedPython);
+        Assert.True(package.OverridenOptions.Uv_NoPythonDownloads);
+    }
+
+    [Fact]
+    public void EmptySavedUvOptionsLeaveFreshOverridesUntouched()
+    {
+        Uv manager = new();
+        Package package = new PackageBuilder()
+            .WithManager(manager)
+            .WithId("httpie")
+            .Build();
+        UvPkgOperationHelper helper = (UvPkgOperationHelper)manager.OperationHelper;
+
+        helper.ApplyOperationOverrides(package, new InstallOptions(), OperationType.Install);
+
+        Assert.Null(package.OverridenOptions.Uv_PythonRequest);
+        Assert.Null(package.OverridenOptions.Uv_ManagedPython);
+        Assert.False(package.OverridenOptions.Uv_NoPythonDownloads);
     }
 }

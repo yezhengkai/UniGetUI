@@ -72,6 +72,27 @@ internal sealed class UvPkgOperationHelper : BasePkgOperationHelper
         return parameters;
     }
 
+    /// <summary>
+    /// Copies the uv-specific options persisted by the install-options GUI into
+    /// <c>package.OverridenOptions</c> for <see cref="_getOperationParameters"/> to read, and
+    /// never clobbers an override that is already set with an unset value.
+    /// </summary>
+    public override void ApplyOperationOverrides(
+        IPackage package,
+        InstallOptions options,
+        OperationType operation
+    )
+    {
+        if (!string.IsNullOrWhiteSpace(options.Uv_PythonRequest))
+            package.OverridenOptions.Uv_PythonRequest = options.Uv_PythonRequest;
+
+        if (bool.TryParse(options.Uv_ManagedPython, out bool managedPython))
+            package.OverridenOptions.Uv_ManagedPython = managedPython;
+
+        if (options.Uv_NoPythonDownloads)
+            package.OverridenOptions.Uv_NoPythonDownloads = true;
+    }
+
     protected override OperationVeredict _getOperationResult(
         IPackage package,
         OperationType operation,
