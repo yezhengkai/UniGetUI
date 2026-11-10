@@ -42,7 +42,7 @@ public sealed class Uv : PackageManager
             ),
             IconId = IconType.Python,
             ColorIconId = "pip_color",
-            ExecutableFriendlyName = "uv",
+            ExecutableFriendlyName = "uv tool",
             InstallVerb = "install",
             UpdateVerb = "upgrade",
             UninstallVerb = "uninstall",
