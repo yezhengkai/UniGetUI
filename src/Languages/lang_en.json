@@ -3026,5 +3026,12 @@
   "Show installed Xcode versions": "Show installed Xcode versions",
   "Installed on this Mac": "Installed on this Mac",
   "Saved Apple ID in Keychain": "Saved Apple ID in Keychain",
-  "UniGetUI unlocks your saved Apple ID from the login keychain only when a download or verification needs it.": "UniGetUI unlocks your saved Apple ID from the login keychain only when a download or verification needs it."
+  "UniGetUI unlocks your saved Apple ID from the login keychain only when a download or verification needs it.": "UniGetUI unlocks your saved Apple ID from the login keychain only when a download or verification needs it.",
+  "Astral's uv tool runner. Installs Python command-line tools into isolated tool environments<br>Contains: <b>Python CLI tools</b>": "Astral's uv tool runner. Installs Python command-line tools into isolated tool environments<br>Contains: <b>Python CLI tools</b>",
+  "Python": "Python",
+  "Python interpreter:": "Python interpreter:",
+  "Python source:": "Python source:",
+  "Do not download Python interpreters": "Do not download Python interpreters",
+  "uv-managed Python": "uv-managed Python",
+  "system Python": "system Python"
 }
