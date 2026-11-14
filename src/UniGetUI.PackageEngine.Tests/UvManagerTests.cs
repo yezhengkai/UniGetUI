@@ -268,9 +268,60 @@ public class UvManagerTests
             }
             """;
 
-        IReadOnlyList<string> versions = PyPIProjectClient.ParseVersions(json);
+        IReadOnlyList<string> versions = PyPIProjectClient.ParseVersions(json, includePreReleases: true);
 
         Assert.Equal(["1.0.0.post1", "1.0.0", "1.0.0rc1", "0.10.0", "0.8.0"], versions);
+    }
+
+    [Fact]
+    public void ParseVersionsStableOnlyWhenPreReleasesAreExcluded()
+    {
+        const string json = """
+            {
+              "releases": {
+                "1.0.0": [
+                  {
+                    "filename": "sample-1.0.0-py3-none-any.whl",
+                    "url": "https://files.pythonhosted.org/packages/ab/cd/sample-1.0.0-py3-none-any.whl",
+                    "yanked": false,
+                    "yanked_reason": null
+                  }
+                ],
+                "1.0.0rc1": [
+                  {
+                    "filename": "sample-1.0.0rc1-py3-none-any.whl",
+                    "url": "https://files.pythonhosted.org/packages/ef/01/sample-1.0.0rc1-py3-none-any.whl",
+                    "yanked": false,
+                    "yanked_reason": null
+                  }
+                ],
+                "1.0.0.post1": [
+                  {
+                    "filename": "sample-1.0.0.post1-py3-none-any.whl",
+                    "url": "https://files.pythonhosted.org/packages/23/45/sample-1.0.0.post1-py3-none-any.whl",
+                    "yanked": false,
+                    "yanked_reason": null
+                  }
+                ],
+                "2.0.0b1": [
+                  {
+                    "filename": "sample-2.0.0b1-py3-none-any.whl",
+                    "url": "https://files.pythonhosted.org/packages/67/89/sample-2.0.0b1-py3-none-any.whl",
+                    "yanked": true,
+                    "yanked_reason": "Broken release"
+                  }
+                ]
+              }
+            }
+            """;
+
+        IReadOnlyList<string> stable = PyPIProjectClient.ParseVersions(json, includePreReleases: false);
+
+        Assert.Equal(["1.0.0.post1", "1.0.0"], stable);
+
+        IReadOnlyList<string> withPreReleases = PyPIProjectClient.ParseVersions(json, includePreReleases: true);
+
+        Assert.Equal(["1.0.0.post1", "1.0.0", "1.0.0rc1"], withPreReleases);
     }
 
     [Fact]
@@ -326,7 +377,7 @@ public class UvManagerTests
             }
             """;
 
-        IReadOnlyList<string> versions = PyPIProjectClient.ParseVersions(json);
+        IReadOnlyList<string> versions = PyPIProjectClient.ParseVersions(json, includePreReleases: true);
 
         Assert.Equal(["21.0", "20.7", "20.5"], versions);
         Assert.DoesNotContain("20.6", versions);

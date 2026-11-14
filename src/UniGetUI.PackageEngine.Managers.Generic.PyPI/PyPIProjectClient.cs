@@ -94,7 +94,11 @@ namespace UniGetUI.PackageEngine.Managers.Generic.PyPI
         internal static string? ParseMetadataVersion(string json) =>
             (JsonNode.Parse(json) as JsonObject)?["info"]?["version"]?.GetValue<string>();
 
-        internal static IReadOnlyList<string> ParseVersions(string json)
+        /// <summary>
+        /// Orders the releases of a project newest first. When <paramref name="includePreReleases"/>
+        /// is false, pre-release versions are left out; yanked releases are dropped in both modes.
+        /// </summary>
+        internal static IReadOnlyList<string> ParseVersions(string json, bool includePreReleases)
         {
             JsonObject? releases = (JsonNode.Parse(json) as JsonObject)?["releases"] as JsonObject;
             if (releases is null)
@@ -106,6 +110,9 @@ namespace UniGetUI.PackageEngine.Managers.Generic.PyPI
             foreach ((string key, JsonNode? value) in releases)
             {
                 if (!PythonVersion.TryParse(key, out PythonVersion parsed))
+                    continue;
+
+                if (!includePreReleases && parsed.IsPreRelease)
                     continue;
 
                 // A partial yank keeps the version: at least one installable file remains.

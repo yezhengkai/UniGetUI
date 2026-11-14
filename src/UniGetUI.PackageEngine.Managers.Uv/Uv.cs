@@ -313,4 +313,9 @@ public sealed class Uv : PackageManager
 
         return base.CompareVersions(versionA, versionB);
     }
+
+    protected override IReadOnlyList<string> ListVersionsForUpdateSelection(IPackage update, bool includePreReleases) =>
+        includePreReleases && DetailsHelper is UvPkgDetailsHelper uv
+            ? uv.GetVersionsIncludingPreReleases(update)
+            : base.ListVersionsForUpdateSelection(update, includePreReleases);
 }
