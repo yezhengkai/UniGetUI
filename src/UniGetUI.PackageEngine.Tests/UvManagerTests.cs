@@ -418,6 +418,11 @@ public class UvManagerTests
             new InstallOptions(),
             OperationType.Update
         );
+        IReadOnlyList<string> updatePinned = helper.GetParameters(
+            package,
+            new InstallOptions { Version = "0.5.0", VersionIsExplicit = true },
+            OperationType.Update
+        );
         IReadOnlyList<string> uninstall = helper.GetParameters(
             package,
             new InstallOptions { CustomParameters_Uninstall = ["--verbose"] },
@@ -442,6 +447,7 @@ public class UvManagerTests
         Assert.Equal(["install", "ruff", "--quiet"], install);
         Assert.Equal(["install", "\"ruff==0.5.0\""], installPinned);
         Assert.Equal(["upgrade", "ruff"], update);
+        Assert.Equal(["upgrade", "\"ruff==0.5.0\""], updatePinned);
         Assert.Equal(["uninstall", "ruff", "--verbose"], uninstall);
         Assert.Equal(["install", "ruff", "--prerelease", "allow"], installPreRelease);
         Assert.Equal(["upgrade", "ruff", "--prerelease", "allow"], updatePreRelease);
