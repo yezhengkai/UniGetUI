@@ -274,6 +274,65 @@ public class UvManagerTests
     }
 
     [Fact]
+    public void ParseVersionsDropsFullyYankedReleases()
+    {
+        const string json = """
+            {
+              "releases": {
+                "20.5": [
+                  {
+                    "filename": "packaging-20.5-py2.py3-none-any.whl",
+                    "url": "https://files.pythonhosted.org/packages/0e/75/dc57e8d75c9f4e7ada4d30230875b66633e250504566bdb4d98615808cd1/packaging-20.5-py2.py3-none-any.whl",
+                    "yanked": false,
+                    "yanked_reason": null
+                  },
+                  {
+                    "filename": "packaging-20.5.tar.gz",
+                    "url": "https://files.pythonhosted.org/packages/61/b8/5a96ce56fcdf1bf7494f642ec7fad3e8c192b3a5b2116b59955ff32f70de/packaging-20.5.tar.gz",
+                    "yanked": false,
+                    "yanked_reason": null
+                  }
+                ],
+                "20.6": [
+                  {
+                    "filename": "packaging-20.6-py2.py3-none-any.whl",
+                    "url": "https://files.pythonhosted.org/packages/06/ef/89d5ce843d4ccaf93d78c93c3c1973897552afafe69df20fb0ed6a1ed40f/packaging-20.6-py2.py3-none-any.whl",
+                    "yanked": true,
+                    "yanked_reason": "Incorrect git commit was used for cutting release"
+                  },
+                  {
+                    "filename": "packaging-20.6.tar.gz",
+                    "url": "https://files.pythonhosted.org/packages/60/fa/4f3c98e84c945958d0633b16d3a8b1a739f649af1090929309b0e9e0c91b/packaging-20.6.tar.gz",
+                    "yanked": true,
+                    "yanked_reason": "Incorrect git commit was used for cutting release"
+                  }
+                ],
+                "20.7": [
+                  {
+                    "filename": "packaging-20.7-py2.py3-none-any.whl",
+                    "url": "https://files.pythonhosted.org/packages/28/87/8edcf555adaf60d053ead881bc056079e29319b643ca710339ce84413136/packaging-20.7-py2.py3-none-any.whl",
+                    "yanked": false,
+                    "yanked_reason": null
+                  },
+                  {
+                    "filename": "packaging-20.7.tar.gz",
+                    "url": "https://files.pythonhosted.org/packages/16/7c/33ae3aa02eb10ca726b21aa88d338e3f619c674e4fb8544eb352330d880a/packaging-20.7.tar.gz",
+                    "yanked": true,
+                    "yanked_reason": null
+                  }
+                ],
+                "21.0": []
+              }
+            }
+            """;
+
+        IReadOnlyList<string> versions = PyPIProjectClient.ParseVersions(json);
+
+        Assert.Equal(["21.0", "20.7", "20.5"], versions);
+        Assert.DoesNotContain("20.6", versions);
+    }
+
+    [Fact]
     public void ManagerDeclaresTheUvIdentity()
     {
         Uv manager = new();
