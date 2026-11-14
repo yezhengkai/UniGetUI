@@ -342,6 +342,7 @@ public class UvManagerTests
         Assert.Equal("PACKAGE_MANAGERS.md#uv", manager.Properties.SetupGuide);
         Assert.True(manager.Capabilities.CanUninstall);
         Assert.True(manager.Capabilities.SupportsCustomVersions);
+        Assert.True(manager.Capabilities.SupportsPreRelease);
     }
 
     [Fact]
@@ -371,11 +372,29 @@ public class UvManagerTests
             new InstallOptions { CustomParameters_Uninstall = ["--verbose"] },
             OperationType.Uninstall
         );
+        IReadOnlyList<string> installPreRelease = helper.GetParameters(
+            package,
+            new InstallOptions { PreRelease = true },
+            OperationType.Install
+        );
+        IReadOnlyList<string> updatePreRelease = helper.GetParameters(
+            package,
+            new InstallOptions { PreRelease = true },
+            OperationType.Update
+        );
+        IReadOnlyList<string> uninstallPreRelease = helper.GetParameters(
+            package,
+            new InstallOptions { PreRelease = true },
+            OperationType.Uninstall
+        );
 
         Assert.Equal(["install", "ruff", "--quiet"], install);
         Assert.Equal(["install", "\"ruff==0.5.0\""], installPinned);
         Assert.Equal(["upgrade", "ruff"], update);
         Assert.Equal(["uninstall", "ruff", "--verbose"], uninstall);
+        Assert.Equal(["install", "ruff", "--prerelease", "allow"], installPreRelease);
+        Assert.Equal(["upgrade", "ruff", "--prerelease", "allow"], updatePreRelease);
+        Assert.Equal(["uninstall", "ruff"], uninstallPreRelease);
         Assert.Equal(OperationVeredict.Success, helper.GetResult(package, OperationType.Uninstall, [], 0));
         Assert.Equal(OperationVeredict.Failure, helper.GetResult(package, OperationType.Uninstall, [], 1));
     }

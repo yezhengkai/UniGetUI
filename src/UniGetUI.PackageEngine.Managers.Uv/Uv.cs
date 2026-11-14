@@ -25,6 +25,7 @@ public sealed class Uv : PackageManager
             CanUninstall = true,
             CanDownloadInstaller = true,
             SupportsCustomVersions = true,
+            SupportsPreRelease = true,
             SerializesOperations = true,
             SupportsCustomPythonInterpreters = true,
         };
